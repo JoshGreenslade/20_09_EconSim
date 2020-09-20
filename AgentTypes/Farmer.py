@@ -1,7 +1,14 @@
-from econsim.Agent import Agent
+from AgentTypes.Peasant import Peasant
 
 
-class Farmer(Agent):
+class Farmer(Peasant):
+
+    def __init__(self):
+        super(Farmer, self).__init__()
+        self.inventory.setAmountOf('Food', 15)
+        self.inventory.setAmountOf('Wood', 5)
+        self.money = 30
+        self.name = self.name + ' the Farmer'
 
     def produce(self):
 

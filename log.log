@@ -1,2 +1,24 @@
-2020-09-18 16:15:33,865 - root - DEBUG - Hello!
-2020-09-18 16:15:33,865 - econsim.Agent - DEBUG - Goodbye
+2020-09-20 01:00:40,075 - root - DEBUG - Hello!
+2020-09-20 01:00:40,075 - econsim.Market - INFO -  
+2020-09-20 01:00:40,075 - econsim.Market - INFO - ====== ROUND 0 =======
+2020-09-20 01:00:40,075 - econsim.Market - INFO -  
+2020-09-20 01:00:40,076 - econsim.Market - INFO -  
+2020-09-20 01:00:40,076 - econsim.Market - INFO - ====== ROUND 1 =======
+2020-09-20 01:00:40,076 - econsim.Market - INFO -  
+2020-09-20 01:00:40,076 - econsim.Market - INFO -  
+2020-09-20 01:00:40,076 - econsim.Market - INFO - ====== ROUND 2 =======
+2020-09-20 01:00:40,076 - econsim.Market - INFO -  
+2020-09-20 01:00:40,076 - econsim.Market - INFO - Bob the Peasant the Farmer sold 2 units of Food for Bob the Peasant the Woodcutter for 12.0 gold a peice!
+2020-09-20 01:00:40,076 - econsim.Market - INFO -  
+2020-09-20 01:00:40,076 - econsim.Market - INFO - ====== ROUND 3 =======
+2020-09-20 01:00:40,076 - econsim.Market - INFO -  
+2020-09-20 01:00:40,076 - econsim.Market - INFO - Bob the Peasant the Farmer sold 0 units of Food for Bob the Peasant the Woodcutter for 14.2625 gold a peice!
+2020-09-20 01:00:40,076 - econsim.Market - INFO - Bob the Peasant the Farmer sold 2 units of Food for Bob the Peasant the Woodcutter for 11.2625 gold a peice!
+2020-09-20 01:00:40,076 - econsim.Market - INFO - Bob the Peasant the Farmer sold 0 units of Food for Bob the Peasant the Woodcutter for 7.5 gold a peice!
+2020-09-20 01:00:40,077 - econsim.Market - INFO -  
+2020-09-20 01:00:40,077 - econsim.Market - INFO - ====== ROUND 4 =======
+2020-09-20 01:00:40,077 - econsim.Market - INFO -  
+2020-09-20 01:00:40,077 - econsim.Market - INFO - Bob the Peasant the Farmer sold 0 units of Food for Bob the Peasant the Woodcutter for 14.2625 gold a peice!
+2020-09-20 01:00:40,077 - econsim.Market - INFO - Bob the Peasant the Farmer sold 2 units of Food for Bob the Peasant the Woodcutter for 11.278459826049806 gold a peice!
+2020-09-20 01:00:40,077 - econsim.Market - INFO - Bob the Peasant the Farmer sold 0 units of Food for Bob the Peasant the Woodcutter for 9.0 gold a peice!
+2020-09-20 01:00:40,077 - econsim.Market - INFO - Bob the Peasant the Woodcutter sold 1 units of Wood for Bob the Peasant the Farmer for 9.0 gold a peice!
