@@ -6,7 +6,13 @@ import AgentTypes
 from econsim.Commodity import Commodity
 from econsim.Inventory import Inventory
 from econsim.Market import Market
-from AgentTypes import Farmer, Woodcutter
+from econsim.History import Plotter
+
+from AgentTypes.Farmer import Farmer
+from AgentTypes.Woodcutter import Woodcutter
+from AgentTypes.Miner import Miner
+from AgentTypes.Smelter import Smelter
+from AgentTypes.Blacksmith import Blacksmith
 
 import logging
 
@@ -17,23 +23,19 @@ logging.basicConfig(filename='./log.log',
 logging.debug('Hello!')
 
 
-def genFarmer():
-    farmer = Farmer.Farmer()
-    return farmer
-
-
-def genWoodcutter():
-    woodcutter = Woodcutter.Woodcutter()
-    return woodcutter
-
-
 def marketWith2Agents():
     market = Market()
-    for i in range(1):
-        market.agents.append(genFarmer())
-        market.agents.append(genWoodcutter())
+    for i in range(20):
+        market.agents.append(Farmer())
+        market.agents.append(Woodcutter())
+        market.agents.append(Miner())
+        market.agents.append(Smelter())
+        market.agents.append(Blacksmith())
+
     return market
 
 
 x = marketWith2Agents()
-x.simulate(5)
+x.simulate(1000)
+y = Plotter()
+y.plotAllPrices(x)

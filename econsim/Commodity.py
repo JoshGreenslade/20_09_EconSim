@@ -12,15 +12,23 @@ class Commodity():
         self.idealAmount = 0
         self.priceLower = 0.0
         self.priceUpper = 1.0
-        self.observedTrades = [random.randint(0, 20) for i in range(5)]
+        self.observedTrades = []
         self.maxObservedTrades = 20
 
     def __repr__(self):
-        return f'{self.amount}'
+        return f'''
+Name: {self.name} 
+Amount: {self.amount}
+idealAmount: {self.idealAmount}
+Shortage: {self.getShortage()}
+Surplus: {self.getSurplus()}
+PriceRange: {self.priceLower} - {self.priceUpper}
+Last 5 Trades: {self.observedTrades[-5:]}
+'''
 
     def estimatePrice(self):
         priceRange = self.priceUpper - self.priceLower
-        priceEstimate = self.priceLower + round(priceRange*random.random())
+        priceEstimate = self.priceLower + (priceRange*random.random())
         return priceEstimate
 
     def getPriceBeliefs(self):
@@ -33,8 +41,6 @@ class Commodity():
     def getTradingRange(self):
         if len(self.observedTrades) >= 2:
             return [min(self.observedTrades), max(self.observedTrades)]
-        else:
-            return [1.0, 20.0]
 
     def addTrade(self, trade):
         self.observedTrades.append(trade)

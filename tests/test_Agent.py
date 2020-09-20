@@ -77,17 +77,23 @@ def test_settingPrice(tradingFarmer):
 
 
 def test_determinePurchaseQuantity(tradingFarmer):
+    tradingFarmer.inventory.max_size = 10
     tradingFarmer.inventory.setAmountOf('Wood', 5)
     tradingFarmer.inventory.setIdealAmount('Wood', 10)
+    food = tradingFarmer.inventory.getCommodity('Wood')
+    food.observedTrades = [4, 5, 6, 5, 5]
 
     assert tradingFarmer.determinePurchaseQuantity('Wood', 2) == 5
-    assert tradingFarmer.determinePurchaseQuantity('Wood', 10) == 0
+    assert tradingFarmer.determinePurchaseQuantity('Wood', 10) == 1
     assert tradingFarmer.determinePurchaseQuantity('Wood', 5) == 2
 
 
 def test_determineSaleQuantity(tradingFarmer):
+    tradingFarmer.inventory.max_size = 10
     tradingFarmer.inventory.setAmountOf('Wood', 15)
     tradingFarmer.inventory.setIdealAmount('Wood', 10)
+    food = tradingFarmer.inventory.getCommodity('Wood')
+    food.observedTrades = [4, 5, 6, 5, 5]
 
     assert tradingFarmer.determineSaleQuantity('Wood', 2) == 1
     assert tradingFarmer.determineSaleQuantity('Wood', 10) == 5
@@ -97,14 +103,14 @@ def test_determineSaleQuantity(tradingFarmer):
 def test_createBid(tradingFarmer):
     tradingFarmer.inventory.setAmountOf('Wood', 5)
     tradingFarmer.inventory.setIdealAmount('Wood', 10)
-    offer = tradingFarmer.createBid(2, 'Wood', 10)
+    offer = tradingFarmer.createBid('Wood', 2, 10)
     minPrice, maxPrice = tradingFarmer.getPriceBeliefsOf('Wood')
     assert offer.units == 5
     assert offer.commodityType == 'Wood'
     assert (offer.unitPrice >= minPrice) & (offer.unitPrice <= maxPrice)
     tradingFarmer.inventory.setAmountOf('Wood', 5)
     tradingFarmer.inventory.setIdealAmount('Wood', 10)
-    offer = tradingFarmer.createBid(5, 'Wood', 10)
+    offer = tradingFarmer.createBid('Wood', 5, 10)
     minPrice, maxPrice = tradingFarmer.getPriceBeliefsOf('Wood')
     assert offer.units == 2
     assert offer.commodityType == 'Wood'
@@ -114,45 +120,15 @@ def test_createBid(tradingFarmer):
 def test_createAsk(tradingFarmer):
     tradingFarmer.inventory.setAmountOf('Wood', 15)
     tradingFarmer.inventory.setIdealAmount('Wood', 10)
-    offer = tradingFarmer.createAsk(1, 'Wood', 1)
+    offer = tradingFarmer.createAsk('Wood', 1, 1)
     minPrice, maxPrice = tradingFarmer.getPriceBeliefsOf('Wood')
     assert offer.units == 1
     assert offer.commodityType == 'Wood'
     assert (offer.unitPrice >= minPrice) & (offer.unitPrice <= maxPrice)
     tradingFarmer.inventory.setAmountOf('Wood', 15)
     tradingFarmer.inventory.setIdealAmount('Wood', 10)
-    offer = tradingFarmer.createAsk(5, 'Wood', 1)
+    offer = tradingFarmer.createAsk('Wood', 5, 1)
     minPrice, maxPrice = tradingFarmer.getPriceBeliefsOf('Wood')
     assert offer.units == 2
     assert offer.commodityType == 'Wood'
     assert (offer.unitPrice >= minPrice) & (offer.unitPrice <= maxPrice)
-
-
-def test_generateOffersSurplus(tradingFarmer):
-    tradingFarmer.inventory.setAmountOf('Wood', 15)
-    tradingFarmer.inventory.setIdealAmount('Wood', 10)
-    offer = tradingFarmer.generateOffers(10, 'Wood')
-    assert offer.units == 5
-    offer = tradingFarmer.generateOffers(1, 'Wood')
-    assert offer.units == 1
-    offer = tradingFarmer.generateOffers(5, 'Wood')
-    assert offer.units == 2
-
-
-def test_generateOffersShortageWithSpace(tradingFarmer):
-    tradingFarmer.inventory.setAmountOf('Wood', 5)
-    tradingFarmer.inventory.setIdealAmount('Wood', 10)
-    offer = tradingFarmer.generateOffers(10, 'Wood')
-    assert offer is None
-    offer = tradingFarmer.generateOffers(1, 'Wood')
-    assert offer.units == 5
-    offer = tradingFarmer.generateOffers(5, 'Wood')
-    assert offer.units == 2
-
-
-def test_generateOffersShortageWithoutSpace(tradingFarmer):
-    tradingFarmer.inventory.max_size = 20
-    tradingFarmer.inventory.setAmountOf('Wood', 6)
-    tradingFarmer.inventory.setIdealAmount('Wood', 8)
-    offer = tradingFarmer.generateOffers(1, 'Wood')
-    assert offer.units == 2

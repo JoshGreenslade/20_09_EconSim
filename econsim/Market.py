@@ -1,5 +1,11 @@
 import random
 import logging
+from AgentTypes.Farmer import Farmer
+from AgentTypes.Woodcutter import Woodcutter
+from AgentTypes.Miner import Miner
+from AgentTypes.Smelter import Smelter
+from AgentTypes.Blacksmith import Blacksmith
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +21,9 @@ class TradeBook():
         self.totalUnitsTraded = {}
         self.totalMoneyTraded = {}
         self.totalSuccessfullTrades = {}
+        self.agentFracion = {}
 
-    def setCommodityTypes(self, commodityTypes):
+    def setCommodityTypes(self, commodityTypes, agentTypes):
         for commodityType in commodityTypes:
             # We must initalise these with something or things will fail
             self.bids[commodityType] = []
@@ -27,6 +34,8 @@ class TradeBook():
             self.totalUnitsTraded[commodityType] = [0]
             self.totalMoneyTraded[commodityType] = [0]
             self.totalSuccessfullTrades[commodityType] = [0]
+        for type in agentTypes:
+            self.agentFracion[type] = [0]
 
     def bid(self, offer):
         commodityType = offer.commodityType
@@ -43,27 +52,77 @@ class Market():
 
         self.agents = []
         self.book = TradeBook()
-        self.commodityTypes = ['Food', 'Wood', 'Tools']
-        self.book.setCommodityTypes(self.commodityTypes)
+        self.commodityTypes = ['Food', 'Wood', 'Ore', 'Metal', 'Tools']
+        self.agentTypes = {'Farmer': Farmer,
+                           'Woodcutter': Woodcutter,
+                           'Miner': Miner,
+                           'Smelter': Smelter,
+                           'Blacksmith': Blacksmith}
+        self.book.setCommodityTypes(
+            self.commodityTypes, self.agentTypes.keys())
+
+    def getMostProfitableClass(self, lastNDays):
+        profits = {worker: 0 for worker in self.agentTypes.keys()}
+        for agent in self.agents:
+            worker = agent.__class__.__name__
+            profits[worker] += sum(agent.profit[-lastNDays:])
+        mostProfit = max(profits, key=lambda key: profits[key])
+        return self.agentTypes[mostProfit]
+
+    def updateFractionOfClasses(self):
+        agentTypeNumbers = {type: 0 for type in self.agentTypes.keys()}
+        for agent in self.agents:
+            type = agent.__class__.__name__
+            agentTypeNumbers[type] += 1
+        nAgents = len(self.agents)*1.0
+        for agentType in self.book.agentFracion.keys():
+            self.book.agentFracion[agentType].append(
+                agentTypeNumbers[agentType]/nAgents)
+
+    def returnLastBookValues(self, book):
+        return [{key: book[key][-1]} for key in book.keys()]
 
     def simulate(self, n_rounds):
+        for agent in self.agents:
+            worker = agent.__class__.__name__
 
         for round in range(n_rounds):
             logger.info(f' ')
             logger.info(f'====== ROUND {round} =======')
             logger.info(f' ')
-            for agent in self.agents:
-                agent.prevMoney = agent.money
-                agent.produce()
-                for commodityType in self.commodityTypes:
-                    agent.generateOffers(self, commodityType)
+            self.updateFractionOfClasses()
+            self.produceAndGenerateAllOffers()
+            self.resolveAllOffers()
+            logger.info(
+                f'Bids: {self.returnLastBookValues(self.book.totalUnitsBid)} ')
+            logger.info(
+                f'Asks: {self.returnLastBookValues(self.book.totalUnitsAsk)} ')
+            # logger.info(f'Asks: {[key:self.book.unitsAsk[key][-1] for key in self.book.unitsAsk.keys()]} ')
 
-            for commodityType in self.commodityTypes:
-                self.resolveOffers(commodityType)
+            # Remove old agents and add new ones
+            toBeRemoved = []
+            toBeAdded = []
             for agent in self.agents:
                 agent.profit.append(agent.money - agent.prevMoney)
                 if agent.money <= 0:
-                    pass
+                    newClass = self.getMostProfitableClass(lastNDays=30)
+                    toBeRemoved.append(agent)
+                    toBeAdded.append(newClass())
+                    logger.info(
+                        f'{agent.name} was replaced with {toBeAdded[-1].name}')
+            [self.agents.remove(agent) for agent in toBeRemoved]
+            [self.agents.append(agent) for agent in toBeAdded]
+
+    def produceAndGenerateAllOffers(self):
+        for agent in self.agents:
+            agent.prevMoney = agent.money
+            agent.produce()
+            for commodityType in self.commodityTypes:
+                agent.generateOffers(commodityType, self)
+
+    def resolveAllOffers(self):
+        for commodityType in self.commodityTypes:
+            self.resolveOffers(commodityType)
 
     def resolveOffers(self, commodityType):
 
@@ -85,7 +144,7 @@ class Market():
 
         if len(bids) > 0 and len(asks) > 0:
             bids = sorted(bids, key=lambda x: x.unitPrice, reverse=True)
-            asks = sorted(asks, key=lambda x: x.unitPrice, reverse=True)
+            asks = sorted(asks, key=lambda x: x.unitPrice, reverse=False)
 
         while len(bids) > 0 and len(asks) > 0:
 

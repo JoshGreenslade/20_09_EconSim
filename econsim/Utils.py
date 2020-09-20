@@ -1,5 +1,14 @@
 def positionInRange(value, min, max, clamp=True):
 
+    if min == max:
+        # If the price is stable cheap is very favourable
+        if value < min:
+            return 0.0
+        if value > min:
+            return 1.0
+        if value == min:
+            return 0.5
+
     value -= min
     max -= min
     min = 0

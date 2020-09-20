@@ -9,6 +9,9 @@ class Inventory():
 
         self.inventory = {}
 
+    def __repr__(self):
+        return self.inventory
+
     def addCommodity(self, commodityType):
         self.inventory[commodityType] = Commodity(commodityType)
 
