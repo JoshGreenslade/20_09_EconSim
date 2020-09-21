@@ -6,18 +6,22 @@ class Peasant(Agent):
     def __init__(self):
         super(Peasant, self).__init__()
         self.name = self.name + ' the Peasant'
-        self.inventory.max_size = 40
-        self.money = 10
+        self.inventory.max_size = 10
+        self.money = 100
 
-        self.inventory.setAmountOf('Food', 5)
-        self.inventory.setAmountOf('Wood', 5)
+        self.inventory.setAmountOf('Food', 0)
+        self.inventory.setAmountOf('Wood', 0)
+        self.inventory.setAmountOf('Ore', 0)
+        self.inventory.setAmountOf('Metal', 0)
+        self.inventory.setAmountOf('Tools', 0)
 
         self.clarse = 'Peasant'
 
         self.inventory.setIdealAmount('Food', 8)
         self.inventory.setIdealAmount('Wood', 8)
-        self.inventory.setPriceBeliefsOfCommodity('Food', 1.0, 20.0)
-        self.inventory.setPriceBeliefsOfCommodity('Wood', 1.0, 20.0)
+        self.inventory.setIdealAmount('Ore', 8)
+        self.inventory.setIdealAmount('Metal', 8)
+        self.inventory.setIdealAmount('Tools', 8)
 
     def produce(self):
 

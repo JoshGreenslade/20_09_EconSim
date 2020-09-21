@@ -1,5 +1,6 @@
 import logging
 import random
+import math
 
 from econsim.Commodity import Commodity
 from econsim.Inventory import Inventory
@@ -24,6 +25,7 @@ class BasicAgent():
         self.prevMoney = 0
         self.inventory = Inventory()
         self.profit = []
+        self.unitCost = 0
 
     def queryInventory(self, commodityType):
         return self.inventory.getAmountOfCommodity(commodityType)
@@ -36,15 +38,12 @@ class BasicAgent():
 
     def getFavouribilityOf(self, commodityType, marketPrice):
         tradingRange = self.inventory.getTradingRangeOfCommodity(commodityType)
-        if tradingRange is None:
-            favouribility = 0.5
-        else:
-            minObsTrade = tradingRange[0]
-            maxObsTrade = tradingRange[1]
-            favouribility = Utils.positionInRange(
-                marketPrice,
-                minObsTrade,
-                maxObsTrade)
+        minObsTrade = tradingRange[0]
+        maxObsTrade = tradingRange[1]
+        favouribility = Utils.positionInRange(
+            marketPrice,
+            minObsTrade,
+            maxObsTrade)
         return favouribility
 
     def setPriceBeliefsOf(self, commodityType, priceLow, priceHigh):
@@ -72,6 +71,11 @@ class BasicAgent():
     def _produce(self, commodityType, amount, chance):
         if self._checkWillEventHappen(chance):
             self.inventory.changeAmountOfCommodity(commodityType, amount)
+
+    def calcCostToProduce(self, market, commodityQuantities, totalProduced):
+        totalCost = sum([commodityQuantities[commodityType] * market.getMeanPrice(
+            commodityType) for commodityType in commodityQuantities.keys()])
+        self.unitCost = totalCost/totalProduced
 
     def _consume(self, commodityType, amount, chance):
         if self._checkWillEventHappen(chance):
@@ -102,13 +106,13 @@ class Agent(BasicAgent):
             commodityType, marketPrice)
         affordableAmount = idealBidAmount
 
-        # Only buy if they can afford it
-        while affordableAmount*bidPrice > self.MAX_SPEND_FRAC * self.money:
-            affordableAmount -= 1
+        # # Only buy if they can afford it
+        # while affordableAmount*bidPrice > self.MAX_SPEND_FRAC * self.money:
+        #     affordableAmount -= 1
 
-        if affordableAmount < idealBidAmount:
-            logger.info(
-                f'{self.name} can only afford {affordableAmount} rather than {idealBidAmount} at {bidPrice} unit price.')
+        # if affordableAmount < idealBidAmount:
+        #     logger.info(
+        #         f'{self.name} can only afford {affordableAmount} rather than {idealBidAmount} at {bidPrice} unit price.')
 
         quantityToBuy = min(affordableAmount, maxToBuy)
         if quantityToBuy > 0:
@@ -117,6 +121,9 @@ class Agent(BasicAgent):
 
     def createAsk(self, commodityType, marketPrice, minToSell):
         askPrice = self.getPriceOf(commodityType)
+        if askPrice < self.unitCost:  # If no profit, don't sell
+            askPrice = self.unitCost*1.1
+
         idealAskAmount = self.determineSaleQuantity(commodityType, marketPrice)
         quantityToSell = max(idealAskAmount, minToSell)
         if quantityToSell > 0:
@@ -125,10 +132,6 @@ class Agent(BasicAgent):
                          commodityType,
                          quantityToSell,
                          askPrice)
-        else:
-            logger.info(
-                f'{self.name} Doesnt want to sell! ideal was{idealAskAmount} at {askPrice}')
-
         return None
 
     def makeRoomFor(self, commodityType, amount):
@@ -158,18 +161,18 @@ class Agent(BasicAgent):
             spareSpace = self.inventory.getSpareSpace()
 
             if shortage > 0:
-                if spareSpace == 0:
-                    # logger.info(
-                    #     f'{self.name} has no space! Has a shortage of {shortage} {commodityType}')
-                    # self.makeRoomFor(commodityType, shortage)
-                    spareSpace = self.inventory.getSpareSpace()
+                # if spareSpace == 0:
+                # logger.info(
+                #     f'{self.name} has no space! Has a shortage of {shortage} {commodityType}')
+                # self.makeRoomFor(commodityType, shortage)
+                # spareSpace = self.inventory.getSpareSpace()
 
-                if spareSpace > 0:
+                if spareSpace >= 0:
                     if shortage <= spareSpace:
                         maxToBuy = shortage
                     else:
                         # I don't understand this line
-                        maxToBuy = spareSpace
+                        maxToBuy = math.floor(spareSpace / shortage)
 
                     if maxToBuy > 0:
 
@@ -222,7 +225,7 @@ class Agent(BasicAgent):
 
             # Decrease certainty
             priceMin -= wobble * priceMean
-            priceMax += wobble * deltaToMean
+            priceMax += wobble * priceMean
 
             self.MAX_SPEND_FRAC += 0.05
             if self.MAX_SPEND_FRAC > 1.0:

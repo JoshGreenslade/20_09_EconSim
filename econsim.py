@@ -25,17 +25,17 @@ logging.debug('Hello!')
 
 def marketWith2Agents():
     market = Market()
-    for i in range(20):
-        market.agents.append(Farmer())
-        market.agents.append(Woodcutter())
-        market.agents.append(Miner())
-        market.agents.append(Smelter())
-        market.agents.append(Blacksmith())
+    for i in range(10):
+        market.addNewAgent(Farmer())
+        market.addNewAgent(Woodcutter())
+        market.addNewAgent(Miner())
+        market.addNewAgent(Smelter())
+        market.addNewAgent(Blacksmith())
 
     return market
 
 
 x = marketWith2Agents()
-x.simulate(1000)
+x.simulate(200)
 y = Plotter()
 y.plotAllPrices(x)

@@ -1,5 +1,6 @@
 import random
 import logging
+import statistics
 from AgentTypes.Farmer import Farmer
 from AgentTypes.Woodcutter import Woodcutter
 from AgentTypes.Miner import Miner
@@ -28,7 +29,7 @@ class TradeBook():
             # We must initalise these with something or things will fail
             self.bids[commodityType] = []
             self.asks[commodityType] = []
-            self.meanPrices[commodityType] = [10]
+            self.meanPrices[commodityType] = [1]
             self.totalUnitsBid[commodityType] = [0]
             self.totalUnitsAsk[commodityType] = [0]
             self.totalUnitsTraded[commodityType] = [0]
@@ -80,7 +81,13 @@ class Market():
                 agentTypeNumbers[agentType]/nAgents)
 
     def returnLastBookValues(self, book):
-        return [{key: book[key][-1]} for key in book.keys()]
+        return [{key: round(book[key][-1], 2)} for key in book.keys()]
+
+    def addNewAgent(self, agent):
+        for commodityType in agent.inventory.getCommodityNames():
+            agent.inventory.getCommodity(
+                commodityType).initaliseObservedTrades(self)
+        self.agents.append(agent)
 
     def simulate(self, n_rounds):
         for agent in self.agents:
@@ -97,6 +104,9 @@ class Market():
                 f'Bids: {self.returnLastBookValues(self.book.totalUnitsBid)} ')
             logger.info(
                 f'Asks: {self.returnLastBookValues(self.book.totalUnitsAsk)} ')
+            logger.info(
+                f'Mean Prices: {self.returnLastBookValues(self.book.meanPrices)} ')
+
             # logger.info(f'Asks: {[key:self.book.unitsAsk[key][-1] for key in self.book.unitsAsk.keys()]} ')
 
             # Remove old agents and add new ones
@@ -111,12 +121,12 @@ class Market():
                     logger.info(
                         f'{agent.name} was replaced with {toBeAdded[-1].name}')
             [self.agents.remove(agent) for agent in toBeRemoved]
-            [self.agents.append(agent) for agent in toBeAdded]
+            [self.addNewAgent(agent) for agent in toBeAdded]
 
     def produceAndGenerateAllOffers(self):
         for agent in self.agents:
             agent.prevMoney = agent.money
-            agent.produce()
+            agent.produce(self)
             for commodityType in self.commodityTypes:
                 agent.generateOffers(commodityType, self)
 
@@ -141,6 +151,7 @@ class Market():
 
         unitsBid = sum([i.units for i in bids])
         unitsAsk = sum([i.units for i in asks])
+        meanPriceOffered = sum([i.unitPrice for i in asks])
 
         if len(bids) > 0 and len(asks) > 0:
             bids = sorted(bids, key=lambda x: x.unitPrice, reverse=True)
@@ -232,6 +243,7 @@ class Market():
             meanPrice = moneyTraded/unitsTraded
         else:
             meanPrice = self.book.meanPrices[commodityType][-1]
+
         self.book.meanPrices[commodityType].append(meanPrice)
 
     def transferGoods(self, commodityType, agentFrom, agentTo, amount):
@@ -252,4 +264,4 @@ class Market():
         return self.book.meanPrices[commodityType][-1]
 
     def getMeanPrices(self, commodityType, nPrices):
-        return self.book.meanPrices[commodityType][:-n]
+        return statistics.mean(self.book.meanPrices[commodityType][-nPrices:])

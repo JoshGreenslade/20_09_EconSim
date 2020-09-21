@@ -13,7 +13,8 @@ class Commodity():
         self.priceLower = 0.0
         self.priceUpper = 1.0
         self.observedTrades = []
-        self.maxObservedTrades = 20
+        self.lookbackTime = 15
+        # self.maxObservedTrades = 20
 
     def __repr__(self):
         return f'''
@@ -25,6 +26,12 @@ Surplus: {self.getSurplus()}
 PriceRange: {self.priceLower} - {self.priceUpper}
 Last 5 Trades: {self.observedTrades[-5:]}
 '''
+
+    def initaliseObservedTrades(self, market):
+        meanPrice = market.getMeanPrices(self.name, self.lookbackTime)
+        self.observedTrades.append(meanPrice * 0.5)
+        self.observedTrades.append(meanPrice * 1.5)
+        self.setPriceBeliefs(meanPrice * 0.5, meanPrice * 1.5)
 
     def estimatePrice(self):
         priceRange = self.priceUpper - self.priceLower
@@ -41,11 +48,13 @@ Last 5 Trades: {self.observedTrades[-5:]}
     def getTradingRange(self):
         if len(self.observedTrades) >= 2:
             return [min(self.observedTrades), max(self.observedTrades)]
+        else:
+            return 1
 
     def addTrade(self, trade):
         self.observedTrades.append(trade)
-        if len(self.observedTrades) > self.maxObservedTrades:
-            self.observedTrades = self.observedTrades[-self.maxObservedTrades:]
+        # if len(self.observedTrades) > self.maxObservedTrades:
+        #     self.observedTrades = self.observedTrades[-self.maxObservedTrades:]
 
     def changeAmount(self, amount):
         self.amount += amount
