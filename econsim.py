@@ -1,6 +1,7 @@
 import pytest
 import econsim
 import AgentTypes
+import math
 
 
 from econsim.Commodity import Commodity
@@ -36,6 +37,13 @@ def marketWith2Agents():
 
 
 x = marketWith2Agents()
-x.simulate(200)
+for i in range(800):
+    x.simulate(1)
+    Farmer.foodOutput = 1*round(math.cos(i*2*math.pi/100) + 1.3)
+    print(i, Farmer.foodOutput)
+# for agent in x.agents:
+#     agent.inventory.setAmountOf('Wood', 0)
+#     agent.inventory.setAmountOf('Food', 0)
+# x.simulate(200)
 y = Plotter()
 y.plotAllPrices(x)

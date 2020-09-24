@@ -24,7 +24,7 @@ class BasicAgent():
         self.money = 0
         self.prevMoney = 0
         self.inventory = Inventory()
-        self.profit = []
+        self.profit = [0]
         self.unitCost = 0
 
     def queryInventory(self, commodityType):
@@ -72,8 +72,8 @@ class BasicAgent():
         if self._checkWillEventHappen(chance):
             self.inventory.changeAmountOfCommodity(commodityType, amount)
 
-    def calcCostToProduce(self, market, commodityQuantities, totalProduced):
-        totalCost = sum([commodityQuantities[commodityType] * market.getMeanPrice(
+    def calcCostToProduce(self, commodityQuantities, totalProduced):
+        totalCost = sum([commodityQuantities[commodityType] * self.getPriceOf(
             commodityType) for commodityType in commodityQuantities.keys()])
         self.unitCost = totalCost/totalProduced
 
@@ -121,8 +121,8 @@ class Agent(BasicAgent):
 
     def createAsk(self, commodityType, marketPrice, minToSell):
         askPrice = self.getPriceOf(commodityType)
-        if askPrice < self.unitCost:  # If no profit, don't sell
-            askPrice = self.unitCost*1.1
+        if askPrice < self.unitCost + 1.1:  # If no profit, don't sell
+            askPrice = (self.unitCost + 1.1)
 
         idealAskAmount = self.determineSaleQuantity(commodityType, marketPrice)
         quantityToSell = max(idealAskAmount, minToSell)
@@ -151,10 +151,10 @@ class Agent(BasicAgent):
     def generateOffers(self, commodityType, market):
         surplus = self.inventory.getSurplus(commodityType)
         shortage = self.inventory.getShortage(commodityType)
-        marketPrice = market.getMeanPrice(commodityType)
+        marketPrice = market.getMeanPrices(commodityType, 20)
 
         if surplus >= 1:
-            offer = self.createAsk(commodityType, marketPrice, 1)
+            offer = self.createAsk(commodityType, marketPrice, 0)
             if offer:
                 market.ask(offer)
         else:
@@ -195,7 +195,7 @@ class Agent(BasicAgent):
         priceMin, priceMax = self.getPriceBeliefsOf(commodityType)
         priceMean = (priceMin + priceMax)/2
         deltaToMean = priceMean - publicPriceMean
-        wobble = 0.05
+        wobble = 0.1
 
         if wasSuccess:
             overpaid = act == 'BUY' and deltaToMean > publicPriceMean*self.SIGNIFICANT
@@ -226,10 +226,6 @@ class Agent(BasicAgent):
             # Decrease certainty
             priceMin -= wobble * priceMean
             priceMax += wobble * priceMean
-
-            self.MAX_SPEND_FRAC += 0.05
-            if self.MAX_SPEND_FRAC > 1.0:
-                self.MAX_SPEND_FRAC = 1.0
 
         if priceMin < self.MIN_PRICE:
             priceMin = self.MIN_PRICE

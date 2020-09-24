@@ -248,7 +248,9 @@ def test_makingEdgeBidCase1(farmer):
         Farmer should try to buy 3
     '''
     farmer.inventory.setAmountOf('Food', 7)
+
     farmer.inventory.setAmountOf('Wood', 0)
+    farmer.inventory.setAmountOf('Tools', 0)
     farmer.inventory.setIdealAmount('Food', 10)
     farmer.inventory.max_space = 10
 

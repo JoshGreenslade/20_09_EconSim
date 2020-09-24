@@ -14,7 +14,7 @@ class Commodity():
         self.priceUpper = 1.0
         self.observedTrades = []
         self.lookbackTime = 15
-        # self.maxObservedTrades = 20
+        self.maxObservedTrades = 20
 
     def __repr__(self):
         return f'''
@@ -53,8 +53,8 @@ Last 5 Trades: {self.observedTrades[-5:]}
 
     def addTrade(self, trade):
         self.observedTrades.append(trade)
-        # if len(self.observedTrades) > self.maxObservedTrades:
-        #     self.observedTrades = self.observedTrades[-self.maxObservedTrades:]
+        if len(self.observedTrades) > self.maxObservedTrades:
+            self.observedTrades = self.observedTrades[-self.maxObservedTrades:]
 
     def changeAmount(self, amount):
         self.amount += amount

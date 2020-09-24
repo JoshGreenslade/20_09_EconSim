@@ -54,6 +54,11 @@ class Market():
         self.agents = []
         self.book = TradeBook()
         self.commodityTypes = ['Food', 'Wood', 'Ore', 'Metal', 'Tools']
+        self.whoMakesThisGood = {'Food': Farmer,
+                                 'Wood': Woodcutter,
+                                 'Ore': Miner,
+                                 'Metal': Smelter,
+                                 'Tools': Blacksmith}
         self.agentTypes = {'Farmer': Farmer,
                            'Woodcutter': Woodcutter,
                            'Miner': Miner,
@@ -61,24 +66,62 @@ class Market():
                            'Blacksmith': Blacksmith}
         self.book.setCommodityTypes(
             self.commodityTypes, self.agentTypes.keys())
+        self.hottestGood = None
+        self.mostProfitableClass = None
 
-    def getMostProfitableClass(self, lastNDays):
+    def bid(self, offer):
+        self.book.bid(offer)
+
+    def ask(self, offer):
+        self.book.ask(offer)
+
+    def getMeanPrice(self, commodityType):
+        return self.getMeanPrices(commodityType, 1)
+
+    def getMeanPrices(self, commodityType, nPrices):
+        return statistics.mean(self.book.meanPrices[commodityType][-nPrices:])
+
+    def getDemand(self, commodityType, nLookback=1):
+        return statistics.mean(self.book.totalUnitsBid[commodityType][-nLookback:])
+
+    def getSupply(self, commodityType, nLookback=1):
+        return statistics.mean(self.book.totalUnitsAsk[commodityType][-nLookback:])
+
+    def getHottestGood(self, minimumRatio=1.5, nLookback=10):
+
+        currentBestGood = None
+        currentBestRatio = minimumRatio
+
+        for commodityType in self.commodityTypes:
+            supply = self.getSupply(commodityType, nLookback)
+            demand = self.getDemand(commodityType, nLookback)
+            if (supply == 0):
+                supply = 0.5
+
+            ratio = demand / supply
+
+            if ratio > currentBestRatio:
+                currentBestGood = commodityType
+                currentBestRatio = ratio
+
+        return currentBestGood
+
+    def getMostProfitableClass(self, lastNDays=10):
         profits = {worker: 0 for worker in self.agentTypes.keys()}
+        nWorkers = {worker: 0 for worker in self.agentTypes.keys()}
+
         for agent in self.agents:
             worker = agent.__class__.__name__
-            profits[worker] += sum(agent.profit[-lastNDays:])
-        mostProfit = max(profits, key=lambda key: profits[key])
-        return self.agentTypes[mostProfit]
+            profits[worker] += statistics.mean(agent.profit[-lastNDays:])
+            nWorkers[worker] += 1
 
-    def updateFractionOfClasses(self):
-        agentTypeNumbers = {type: 0 for type in self.agentTypes.keys()}
-        for agent in self.agents:
-            type = agent.__class__.__name__
-            agentTypeNumbers[type] += 1
-        nAgents = len(self.agents)*1.0
-        for agentType in self.book.agentFracion.keys():
-            self.book.agentFracion[agentType].append(
-                agentTypeNumbers[agentType]/nAgents)
+        for worker in profits.keys():
+            if nWorkers[worker] > 0:
+                profits[worker] = round(profits[worker]/nWorkers[worker], 2)
+
+        mostProfit = max(profits, key=lambda key: profits[key])
+        logger.info(f'Profits: {profits}')
+        return mostProfit
 
     def returnLastBookValues(self, book):
         return [{key: round(book[key][-1], 2)} for key in book.keys()]
@@ -89,6 +132,13 @@ class Market():
                 commodityType).initaliseObservedTrades(self)
         self.agents.append(agent)
 
+    def decideReplacementClass(self):
+        if self.hottestGood is not None:
+            logger.info(f'Theres lots of demand for {self.hottestGood}!')
+            return self.whoMakesThisGood[self.hottestGood]
+        else:
+            return self.agentTypes[self.mostProfitableClass]
+
     def simulate(self, n_rounds):
         for agent in self.agents:
             worker = agent.__class__.__name__
@@ -97,7 +147,6 @@ class Market():
             logger.info(f' ')
             logger.info(f'====== ROUND {round} =======')
             logger.info(f' ')
-            self.updateFractionOfClasses()
             self.produceAndGenerateAllOffers()
             self.resolveAllOffers()
             logger.info(
@@ -110,12 +159,14 @@ class Market():
             # logger.info(f'Asks: {[key:self.book.unitsAsk[key][-1] for key in self.book.unitsAsk.keys()]} ')
 
             # Remove old agents and add new ones
+            self.mostProfitableClass = self.getMostProfitableClass()
+            self.hottestGood = self.getHottestGood()
             toBeRemoved = []
             toBeAdded = []
             for agent in self.agents:
                 agent.profit.append(agent.money - agent.prevMoney)
                 if agent.money <= 0:
-                    newClass = self.getMostProfitableClass(lastNDays=30)
+                    newClass = self.decideReplacementClass()
                     toBeRemoved.append(agent)
                     toBeAdded.append(newClass())
                     logger.info(
@@ -126,7 +177,7 @@ class Market():
     def produceAndGenerateAllOffers(self):
         for agent in self.agents:
             agent.prevMoney = agent.money
-            agent.produce(self)
+            agent.produce()
             for commodityType in self.commodityTypes:
                 agent.generateOffers(commodityType, self)
 
@@ -253,15 +304,3 @@ class Market():
     def transferMoney(self, agentFrom, agentTo, amount):
         agentFrom.money -= amount
         agentTo.money += amount
-
-    def bid(self, offer):
-        self.book.bid(offer)
-
-    def ask(self, offer):
-        self.book.ask(offer)
-
-    def getMeanPrice(self, commodityType):
-        return self.book.meanPrices[commodityType][-1]
-
-    def getMeanPrices(self, commodityType, nPrices):
-        return statistics.mean(self.book.meanPrices[commodityType][-nPrices:])

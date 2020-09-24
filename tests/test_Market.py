@@ -13,16 +13,6 @@ logging.basicConfig(filename='./log.log',
 logging.debug('Hello!')
 
 
-def genFarmer():
-    farmer = Farmer.Farmer()
-    return farmer
-
-
-def genWoodcutter():
-    woodcutter = Woodcutter.Woodcutter()
-    return woodcutter
-
-
 @pytest.fixture
 def emptyMarket():
     market = Market()

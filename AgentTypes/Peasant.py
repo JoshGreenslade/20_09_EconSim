@@ -6,8 +6,8 @@ class Peasant(Agent):
     def __init__(self):
         super(Peasant, self).__init__()
         self.name = self.name + ' the Peasant'
-        self.inventory.max_size = 10
-        self.money = 100
+        self.inventory.max_size = 20
+        self.money = 50
 
         self.inventory.setAmountOf('Food', 0)
         self.inventory.setAmountOf('Wood', 0)
@@ -29,9 +29,9 @@ class Peasant(Agent):
         hasWood = self.queryInventory('Wood') > 0
 
         if hasFood:
-            self._consume('Food', 1, 1)
+            self._consume('Food', 3, 1)
         elif hasWood:
-            self._consume('Wood', 1, 1)
+            self._consume('Wood', 2, 1)
         else:
             # Fine the agent if they're not being productive.
             self._consume('Money', 2, 1)

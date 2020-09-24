@@ -7,9 +7,9 @@ class Smelter(Peasant):
 
     def __init__(self):
         super(Smelter, self).__init__()
-        self.inventory.setAmountOf('Food', 1)
+        self.inventory.setAmountOf('Food', 3)
         self.inventory.setAmountOf('Wood', 0)
-        self.inventory.setAmountOf('Ore', 0)
+        self.inventory.setAmountOf('Ore', 5)
         self.inventory.setAmountOf('Metal', 0)
         self.inventory.setAmountOf('Tools', 1)
 
@@ -22,7 +22,7 @@ class Smelter(Peasant):
         self.name = 'Sam the Smelty s' + str(Smelter.id)
         Smelter.id += 1
 
-    def produce(self, market):
+    def produce(self):
 
         hasTools = self.queryInventory('Tools') > 0
         hasOre = self.queryInventory('Ore') > 0
@@ -38,8 +38,7 @@ class Smelter(Peasant):
 
                 commodityQuantities = {
                     'Ore': oreAmount, 'Tools': 0.1, 'Food': 0.1}
-                self.calcCostToProduce(market,
-                                       commodityQuantities,
+                self.calcCostToProduce(commodityQuantities,
                                        totalProduced=oreAmount)
             else:
                 maxToProduce = self.queryInventory('Ore')
@@ -50,8 +49,7 @@ class Smelter(Peasant):
                 self._consume('Food', 1, 1)
 
                 commodityQuantities = {'Ore': maxToProduce, 'Food': 1}
-                self.calcCostToProduce(market,
-                                       commodityQuantities,
+                self.calcCostToProduce(commodityQuantities,
                                        totalProduced=maxToProduce)
         else:
             self._consume('Money', 2, 1)

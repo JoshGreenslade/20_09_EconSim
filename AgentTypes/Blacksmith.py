@@ -12,9 +12,9 @@ class Blacksmith(Peasant):
         self.inventory.setAmountOf('Wood', 0)
         self.inventory.setAmountOf('Ore', 0)
         self.inventory.setAmountOf('Metal', 5)
-        self.inventory.setAmountOf('Tools', 0)
+        self.inventory.setAmountOf('Tools', 1)
 
-        self.inventory.setIdealAmount('Food', 3)
+        self.inventory.setIdealAmount('Food', 1)
         self.inventory.setIdealAmount('Wood', 0)
         self.inventory.setIdealAmount('Ore', 0)
         self.inventory.setIdealAmount('Metal', 5)
@@ -23,7 +23,7 @@ class Blacksmith(Peasant):
         self.name = 'Bart the Blacksmith B' + str(Blacksmith.id)
         Blacksmith.id += 1
 
-    def produce(self, market):
+    def produce(self):
 
         hasMetal = self.queryInventory('Metal') > 0
         hasFood = self.queryInventory('Food') > 0
@@ -36,8 +36,7 @@ class Blacksmith(Peasant):
             self._consume('Food', 1, 1)
 
             commodityQuantities = {'Metal': amountMetal, 'Food': 1}
-            self.calcCostToProduce(market,
-                                   commodityQuantities,
+            self.calcCostToProduce(commodityQuantities,
                                    totalProduced=amountMetal)
 
         else:

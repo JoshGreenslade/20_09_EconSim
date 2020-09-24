@@ -11,19 +11,24 @@ from AgentTypes import Farmer, Woodcutter
 @pytest.fixture
 def farmer():
     farmer = Farmer.Farmer()
+    farmer.setPriceBeliefsOf('Food', 2, 8)
+    farmer.setPriceBeliefsOf('Wood', 2, 8)
+    farmer.setPriceBeliefsOf('Tools', 2, 8)
+    farmer.inventory.max_size = 100
     return farmer
 
 
 @pytest.fixture
 def tradingFarmer():
     farmer = Farmer.Farmer()
-    farmer.inventory.max_size = 20
-    farmer.inventory.addTradeOfCommodity('Wood', 5)
-    farmer.inventory.addTradeOfCommodity('Wood', 4)
-    farmer.inventory.addTradeOfCommodity('Wood', 6)
-    farmer.inventory.addTradeOfCommodity('Wood', 7)
-    farmer.inventory.addTradeOfCommodity('Wood', 3)
+    farmer.setPriceBeliefsOf('Food', 2, 8)
     farmer.setPriceBeliefsOf('Wood', 2, 8)
+    farmer.setPriceBeliefsOf('Tools', 2, 8)
+    farmer.inventory.max_size = 100
+    farmer.inventory.addTradeOfCommodity('Wood', 2)
+    farmer.inventory.addTradeOfCommodity('Wood', 8)
+    farmer.inventory.addTradeOfCommodity('Food', 2)
+    farmer.inventory.addTradeOfCommodity('Food', 8)
     return farmer
 
 
@@ -40,15 +45,16 @@ def test_checkFarmerDefaultSetup(farmer):
 def test_checkFarmerProductionWithoutTools(farmer):
     farmer.inventory.setAmountOf('Food', 10)
     farmer.inventory.setAmountOf('Wood', 10)
+    farmer.inventory.setAmountOf('Tools', 0)
     farmer.produce()
     assert farmer.queryInventory('Food') == 12
     assert farmer.queryInventory('Wood') == 9
 
 
 def test_checkFarmerProductionWithTools(farmer):
-    farmer.inventory.setAmountOf('Tools', 10)
     farmer.inventory.setAmountOf('Food', 10)
     farmer.inventory.setAmountOf('Wood', 10)
+    farmer.inventory.setAmountOf('Tools', 10)
     farmer.produce()
     assert farmer.queryInventory('Food') == 14
     assert farmer.queryInventory('Wood') == 9
@@ -62,13 +68,14 @@ def test_checkToolsGetDestroyed(farmer):
         farmer.inventory.setAmountOf('Wood', 10)
         farmer.produce()
         n_attempts += 1
-    assert n_attempts > 1
+    assert n_attempts > 0
 
 
 def test_checkGetFined(farmer):
+    initalMoney = farmer.money
     farmer.inventory.setAmountOf('Wood', 0)
     farmer.produce()
-    assert farmer.money == 28
+    assert farmer.money == initalMoney - 2
 
 
 def test_settingPrice(tradingFarmer):
