@@ -7,11 +7,11 @@ class Smelter(Peasant):
 
     def __init__(self):
         super(Smelter, self).__init__()
-        self.inventory.setAmountOf('Food', 3)
+        self.inventory.setAmountOf('Food', 0)
         self.inventory.setAmountOf('Wood', 0)
-        self.inventory.setAmountOf('Ore', 5)
-        self.inventory.setAmountOf('Metal', 0)
-        self.inventory.setAmountOf('Tools', 1)
+        self.inventory.setAmountOf('Ore', 0)
+        self.inventory.setAmountOf('Metal', 3)
+        self.inventory.setAmountOf('Tools', 0)
 
         self.inventory.setIdealAmount('Food', 3)
         self.inventory.setIdealAmount('Wood', 0)
@@ -20,6 +20,7 @@ class Smelter(Peasant):
         self.inventory.setIdealAmount('Tools', 1)
 
         self.name = 'Sam the Smelty s' + str(Smelter.id)
+        self.clarse = 'Smelter'
         Smelter.id += 1
 
     def produce(self):

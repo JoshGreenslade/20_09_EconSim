@@ -98,7 +98,7 @@ class Agent(BasicAgent):
         self.LOW_INVENTORY = 0.1
         self.HIGH_INVENTORY = 2.0
         self.MIN_PRICE = 1.0
-        self.MAX_SPEND_FRAC = 0.6
+        self.MAX_SPEND_FRAC = 0.4
 
     def createBid(self, commodityType, marketPrice, maxToBuy):
         bidPrice = self.getPriceOf(commodityType)
@@ -106,13 +106,13 @@ class Agent(BasicAgent):
             commodityType, marketPrice)
         affordableAmount = idealBidAmount
 
-        # # Only buy if they can afford it
-        # while affordableAmount*bidPrice > self.MAX_SPEND_FRAC * self.money:
-        #     affordableAmount -= 1
+        # Only buy if they can afford it
+        while affordableAmount*bidPrice > self.MAX_SPEND_FRAC * self.money:
+            affordableAmount -= 1
 
-        # if affordableAmount < idealBidAmount:
-        #     logger.info(
-        #         f'{self.name} can only afford {affordableAmount} rather than {idealBidAmount} at {bidPrice} unit price.')
+        if affordableAmount < idealBidAmount:
+            logger.info(
+                f'{self.name} can only afford {affordableAmount} of {commodityType} rather than {idealBidAmount} at {bidPrice} unit price.')
 
         quantityToBuy = min(affordableAmount, maxToBuy)
         if quantityToBuy > 0:
@@ -121,8 +121,8 @@ class Agent(BasicAgent):
 
     def createAsk(self, commodityType, marketPrice, minToSell):
         askPrice = self.getPriceOf(commodityType)
-        if askPrice < self.unitCost + 1.1:  # If no profit, don't sell
-            askPrice = (self.unitCost + 1.1)
+        # if askPrice < self.unitCost + 1.1:  # If no profit, don't sell
+        #     askPrice = (self.unitCost + 1.1)
 
         idealAskAmount = self.determineSaleQuantity(commodityType, marketPrice)
         quantityToSell = max(idealAskAmount, minToSell)

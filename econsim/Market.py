@@ -22,7 +22,7 @@ class TradeBook():
         self.totalUnitsTraded = {}
         self.totalMoneyTraded = {}
         self.totalSuccessfullTrades = {}
-        self.agentFracion = {}
+        self.agentFraction = {}
 
     def setCommodityTypes(self, commodityTypes, agentTypes):
         for commodityType in commodityTypes:
@@ -36,7 +36,7 @@ class TradeBook():
             self.totalMoneyTraded[commodityType] = [0]
             self.totalSuccessfullTrades[commodityType] = [0]
         for type in agentTypes:
-            self.agentFracion[type] = [0]
+            self.agentFraction[type] = [0]
 
     def bid(self, offer):
         commodityType = offer.commodityType
@@ -48,6 +48,8 @@ class TradeBook():
 
 
 class Market():
+
+    marketRound = 1
 
     def __init__(self):
 
@@ -78,8 +80,11 @@ class Market():
     def getMeanPrice(self, commodityType):
         return self.getMeanPrices(commodityType, 1)
 
+    def getLastNMeanPrices(self, commodityType, nPrices):
+        return self.book.meanPrices[commodityType][-nPrices:]
+
     def getMeanPrices(self, commodityType, nPrices):
-        return statistics.mean(self.book.meanPrices[commodityType][-nPrices:])
+        return statistics.mean(self.getLastNMeanPrices(commodityType, nPrices))
 
     def getDemand(self, commodityType, nLookback=1):
         return statistics.mean(self.book.totalUnitsBid[commodityType][-nLookback:])
@@ -145,18 +150,19 @@ class Market():
 
         for round in range(n_rounds):
             logger.info(f' ')
-            logger.info(f'====== ROUND {round} =======')
+            logger.info(f'====== ROUND {Market.marketRound} =======')
             logger.info(f' ')
             self.produceAndGenerateAllOffers()
             self.resolveAllOffers()
+            self.updateAgentFraction()
+            logger.info(' ')
+            logger.info(f'Fractions {self.book.agentFraction}')
             logger.info(
                 f'Bids: {self.returnLastBookValues(self.book.totalUnitsBid)} ')
             logger.info(
                 f'Asks: {self.returnLastBookValues(self.book.totalUnitsAsk)} ')
             logger.info(
                 f'Mean Prices: {self.returnLastBookValues(self.book.meanPrices)} ')
-
-            # logger.info(f'Asks: {[key:self.book.unitsAsk[key][-1] for key in self.book.unitsAsk.keys()]} ')
 
             # Remove old agents and add new ones
             self.mostProfitableClass = self.getMostProfitableClass()
@@ -173,6 +179,7 @@ class Market():
                         f'{agent.name} was replaced with {toBeAdded[-1].name}')
             [self.agents.remove(agent) for agent in toBeRemoved]
             [self.addNewAgent(agent) for agent in toBeAdded]
+            Market.marketRound += 1
 
     def produceAndGenerateAllOffers(self):
         for agent in self.agents:
@@ -184,6 +191,15 @@ class Market():
     def resolveAllOffers(self):
         for commodityType in self.commodityTypes:
             self.resolveOffers(commodityType)
+
+    def updateAgentFraction(self):
+        nTotalAgents = 0
+        nAgents = {type: 0 for type in self.agentTypes.keys()}
+        for agent in self.agents:
+            nTotalAgents += 1
+            nAgents[agent.clarse] += 1
+        self.book.agentFraction = {
+            agentType: fraction / nTotalAgents for agentType, fraction in nAgents.items()}
 
     def resolveOffers(self, commodityType):
 
@@ -294,6 +310,14 @@ class Market():
             meanPrice = moneyTraded/unitsTraded
         else:
             meanPrice = self.book.meanPrices[commodityType][-1]
+            # meanPrice = meanPriceOffered
+
+        # Get the mean price for the last several days
+        lookbackTimeForMeanPrice = 2
+        prevMeanPrices = self.getLastNMeanPrices(
+            commodityType, lookbackTimeForMeanPrice)
+        prevMeanPrices.append(meanPrice)
+        meanPrice = statistics.mean(prevMeanPrices)
 
         self.book.meanPrices[commodityType].append(meanPrice)
 

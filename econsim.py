@@ -39,11 +39,14 @@ def marketWith2Agents():
 x = marketWith2Agents()
 for i in range(800):
     x.simulate(1)
-    Farmer.foodOutput = 1*round(math.cos(i*2*math.pi/100) + 1.3)
+    Farmer.foodOutput = 1 * \
+        round(math.cos(i*2*math.pi/200) + 1.4)
+    Woodcutter.woodOutput = 1 * \
+        round(math.sin(i*2*math.pi/100) + 1.4)
     print(i, Farmer.foodOutput)
 # for agent in x.agents:
 #     agent.inventory.setAmountOf('Wood', 0)
 #     agent.inventory.setAmountOf('Food', 0)
-# x.simulate(200)
+# x.simulate(800)
 y = Plotter()
 y.plotAllPrices(x)

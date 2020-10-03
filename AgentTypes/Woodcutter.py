@@ -4,14 +4,15 @@ from AgentTypes.Peasant import Peasant
 class Woodcutter(Peasant):
 
     id = 1
+    woodOutput = 2
 
     def __init__(self):
         super(Woodcutter, self).__init__()
-        self.inventory.setAmountOf('Food', 3)
-        self.inventory.setAmountOf('Wood', 0)
+        self.inventory.setAmountOf('Food', 0)
+        self.inventory.setAmountOf('Wood', 3)
         self.inventory.setAmountOf('Ore', 0)
         self.inventory.setAmountOf('Metal', 0)
-        self.inventory.setAmountOf('Tools', 1)
+        self.inventory.setAmountOf('Tools', 0)
 
         self.inventory.setIdealAmount('Food', 3)
         self.inventory.setIdealAmount('Wood', 0)
@@ -20,6 +21,8 @@ class Woodcutter(Peasant):
         self.inventory.setIdealAmount('Tools', 1)
 
         self.name = 'Alice the Woodcutter w' + str(Woodcutter.id)
+        self.clarse = 'Woodcutter'
+
         Woodcutter.id += 1
 
     def produce(self):
@@ -29,7 +32,7 @@ class Woodcutter(Peasant):
 
         if hasFood:
             if hasTools:
-                self._produce('Wood', 2, 1)
+                self._produce('Wood', Woodcutter.woodOutput, 1)
                 self._consume('Food', 1, 1)
                 self._consume('Tools', 1, 0.1)
 

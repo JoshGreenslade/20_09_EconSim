@@ -1,5 +1,6 @@
 import pylab as plt
 import numpy
+import math
 
 
 def running_mean(x, N):
@@ -23,5 +24,6 @@ class Plotter():
         prices = market.book.meanPrices[commodityType]
         prices = running_mean(prices, 20)
         # agentFrac = market.book.agentFracion['Farmer']
-        plt.plot(prices, label=commodityType)
+        plt.plot(prices, label=commodityType, lw=3)
+
         # plt.plot([i * 100 for i in agentFrac], )

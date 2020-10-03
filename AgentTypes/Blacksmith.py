@@ -8,11 +8,11 @@ class Blacksmith(Peasant):
 
     def __init__(self):
         super(Blacksmith, self).__init__()
-        self.inventory.setAmountOf('Food', 1)
+        self.inventory.setAmountOf('Food', 0)
         self.inventory.setAmountOf('Wood', 0)
         self.inventory.setAmountOf('Ore', 0)
-        self.inventory.setAmountOf('Metal', 5)
-        self.inventory.setAmountOf('Tools', 1)
+        self.inventory.setAmountOf('Metal', 0)
+        self.inventory.setAmountOf('Tools', 3)
 
         self.inventory.setIdealAmount('Food', 1)
         self.inventory.setIdealAmount('Wood', 0)
@@ -21,6 +21,7 @@ class Blacksmith(Peasant):
         self.inventory.setIdealAmount('Tools', 1)
 
         self.name = 'Bart the Blacksmith B' + str(Blacksmith.id)
+        self.clarse = 'Blacksmith'
         Blacksmith.id += 1
 
     def produce(self):
