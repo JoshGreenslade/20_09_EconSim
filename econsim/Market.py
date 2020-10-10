@@ -23,6 +23,8 @@ class TradeBook():
         self.totalMoneyTraded = {}
         self.totalSuccessfullTrades = {}
         self.agentFraction = {}
+        self.meanPricesOffered = {}
+        self.meanPricesRequested = {}
 
     def setCommodityTypes(self, commodityTypes, agentTypes):
         for commodityType in commodityTypes:
@@ -35,6 +37,9 @@ class TradeBook():
             self.totalUnitsTraded[commodityType] = [0]
             self.totalMoneyTraded[commodityType] = [0]
             self.totalSuccessfullTrades[commodityType] = [0]
+            self.meanPricesOffered[commodityType] = [1]
+            self.meanPricesRequested[commodityType] = [1]
+
         for type in agentTypes:
             self.agentFraction[type] = [0]
 
@@ -85,6 +90,18 @@ class Market():
 
     def getMeanPrices(self, commodityType, nPrices):
         return statistics.mean(self.getLastNMeanPrices(commodityType, nPrices))
+
+    def getMeanOfferedPrices(self, commodityType, nPrices):
+        return statistics.mean(self.getLastNMeanPricesOffered(commodityType, nPrices))
+
+    def getLastNMeanPricesOffered(self, commodityType, nPrices):
+        return self.book.meanPricesOffered[commodityType][-nPrices:]
+
+    def getLastNMeanPricesRequested(self, commodityType, nPrices):
+        return self.book.meanPricesRequested[commodityType][-nPrices:]
+
+    def getMeanPricesOffered(self, commodityType, nPrices):
+        return statistics.mean(self.getLastNMeanPricesOffered(commodityType, nPrices))
 
     def getDemand(self, commodityType, nLookback=1):
         return statistics.mean(self.book.totalUnitsBid[commodityType][-nLookback:])
@@ -163,7 +180,10 @@ class Market():
                 f'Asks: {self.returnLastBookValues(self.book.totalUnitsAsk)} ')
             logger.info(
                 f'Mean Prices: {self.returnLastBookValues(self.book.meanPrices)} ')
-
+            logger.info(
+                f'Mean Prices Offered: {self.returnLastBookValues(self.book.meanPricesOffered)} ')
+            logger.info(
+                f'Mean Prices Requested: {self.returnLastBookValues(self.book.meanPricesRequested)} ')
             # Remove old agents and add new ones
             self.mostProfitableClass = self.getMostProfitableClass()
             self.hottestGood = self.getHottestGood()
@@ -218,7 +238,16 @@ class Market():
 
         unitsBid = sum([i.units for i in bids])
         unitsAsk = sum([i.units for i in asks])
-        meanPriceOffered = sum([i.unitPrice for i in asks])
+        if len(asks) > 0:
+            meanPricesOffered = sum([i.unitPrice for i in asks])/len(asks)
+        else:
+            meanPricesOffered = self.getLastNMeanPricesOffered(
+                commodityType, 1)[0]
+        if len(bids) > 0:
+            meanPricesRequested = sum([i.unitPrice for i in bids])/len(bids)
+        else:
+            meanPricesRequested = self.getLastNMeanPricesRequested(
+                commodityType, 1)[0]
 
         if len(bids) > 0 and len(asks) > 0:
             bids = sorted(bids, key=lambda x: x.unitPrice, reverse=True)
@@ -305,6 +334,9 @@ class Market():
         self.book.totalMoneyTraded[commodityType].append(moneyTraded)
         self.book.totalSuccessfullTrades[commodityType].append(
             successfulTrades)
+        self.book.meanPricesOffered[commodityType].append(meanPricesOffered)
+        self.book.meanPricesRequested[commodityType].append(
+            meanPricesRequested)
 
         if unitsTraded > 0:
             meanPrice = moneyTraded/unitsTraded

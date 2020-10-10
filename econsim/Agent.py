@@ -97,8 +97,9 @@ class Agent(BasicAgent):
         self.SIG_IMBALACE = 0.33
         self.LOW_INVENTORY = 0.1
         self.HIGH_INVENTORY = 2.0
-        self.MIN_PRICE = 1.0
+        self.MIN_PRICE = 0.0
         self.MAX_SPEND_FRAC = 0.4
+        self.LOOKBACK_TIME = 1
 
     def createBid(self, commodityType, marketPrice, maxToBuy):
         bidPrice = self.getPriceOf(commodityType)
@@ -107,7 +108,7 @@ class Agent(BasicAgent):
         affordableAmount = idealBidAmount
 
         # Only buy if they can afford it
-        while affordableAmount*bidPrice > self.MAX_SPEND_FRAC * self.money:
+        while affordableAmount*marketPrice > self.MAX_SPEND_FRAC * self.money:
             affordableAmount -= 1
 
         if affordableAmount < idealBidAmount:
@@ -121,8 +122,8 @@ class Agent(BasicAgent):
 
     def createAsk(self, commodityType, marketPrice, minToSell):
         askPrice = self.getPriceOf(commodityType)
-        # if askPrice < self.unitCost + 1.1:  # If no profit, don't sell
-        #     askPrice = (self.unitCost + 1.1)
+        if askPrice < self.unitCost:  # If no profit, don't sell
+            askPrice = (self.unitCost)
 
         idealAskAmount = self.determineSaleQuantity(commodityType, marketPrice)
         quantityToSell = max(idealAskAmount, minToSell)
@@ -151,7 +152,7 @@ class Agent(BasicAgent):
     def generateOffers(self, commodityType, market):
         surplus = self.inventory.getSurplus(commodityType)
         shortage = self.inventory.getShortage(commodityType)
-        marketPrice = market.getMeanPrices(commodityType, 20)
+        marketPrice = market.getMeanPrices(commodityType, self.LOOKBACK_TIME)
 
         if surplus >= 1:
             offer = self.createAsk(commodityType, marketPrice, 0)
@@ -207,7 +208,6 @@ class Agent(BasicAgent):
             # Increase certainty
             priceMin += wobble * priceMean
             priceMax -= wobble * priceMean
-            self.MAX_SPEND_FRAC = 0.6
 
         else:
             currentStock = self.queryInventory(commodityType)
@@ -224,8 +224,10 @@ class Agent(BasicAgent):
                 wobble *= 2
 
             # Decrease certainty
-            priceMin -= wobble * priceMean
-            priceMax += wobble * priceMean
+            if act == 'BUY':
+                priceMax += wobble * priceMean
+            if act == 'SELL':
+                priceMin -= wobble * priceMean
 
         if priceMin < self.MIN_PRICE:
             priceMin = self.MIN_PRICE

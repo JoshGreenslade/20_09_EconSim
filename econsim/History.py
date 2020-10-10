@@ -16,14 +16,17 @@ class Plotter():
     def plotAllPrices(self, market):
         for commodityType in market.commodityTypes:
             self.plotMeanPrice(commodityType, market)
+            # self.plotMeanPriceOffered(commodityType, market)
         plt.legend()
         plt.grid()
         plt.show()
 
     def plotMeanPrice(self, commodityType, market):
         prices = market.book.meanPrices[commodityType]
-        prices = running_mean(prices, 20)
-        # agentFrac = market.book.agentFracion['Farmer']
+        # prices = running_mean(prices, 10)
         plt.plot(prices, label=commodityType, lw=3)
 
-        # plt.plot([i * 100 for i in agentFrac], )
+    def plotMeanPriceOffered(self, commodityType, market):
+        prices = market.book.meanPricesOffered[commodityType]
+        prices = running_mean(prices, 20)
+        plt.plot(prices, label='Off: ' + commodityType, lw=3)

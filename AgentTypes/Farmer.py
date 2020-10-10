@@ -29,22 +29,26 @@ class Farmer(Peasant):
         hasTools = self.queryInventory('Tools') > 0
         hasWood = self.queryInventory('Wood') > 0
 
-        if hasWood:
-            if hasTools:
-                self._produce('Food', Farmer.foodOutput, 1)
-                self._consume('Wood', 1, 1)
-                self._consume('Tools', 1, 0.1)
+        if Farmer.foodOutput > 0:
+            if hasWood:
+                if hasTools:
+                    self._produce('Food', Farmer.foodOutput, 1)
+                    self._consume('Wood', 1, 1)
+                    self._consume('Tools', 1, 0.1)
 
-                commodityQuantities = {'Wood': 1, 'Tools': 0.1}
-                self.calcCostToProduce(commodityQuantities,
-                                       totalProduced=Farmer.foodOutput+0.1)
+                    commodityQuantities = {'Wood': 1, 'Tools': 0.1}
+                    self.calcCostToProduce(commodityQuantities,
+                                           totalProduced=Farmer.foodOutput)
+                else:
+                    self._produce('Food', 1, 1)
+                    self._consume('Wood', 1, 1)
+
+                    commodityQuantities = {'Wood': 1}
+                    self.calcCostToProduce(commodityQuantities,
+                                           totalProduced=1)
             else:
-                self._produce('Food', 0, 1)
-                self._consume('Wood', 0, 1)
-
-                commodityQuantities = {'Wood': 1}
-                self.calcCostToProduce(commodityQuantities,
-                                       totalProduced=0.1)
+                # Fine the agent if they're not being productive.
+                self._consume('Money', 2, 1)
         else:
             # Fine the agent if they're not being productive.
             self._consume('Money', 2, 1)

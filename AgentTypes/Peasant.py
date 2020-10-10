@@ -6,7 +6,7 @@ class Peasant(Agent):
     def __init__(self):
         super(Peasant, self).__init__()
         self.name = self.name + ' the Peasant'
-        self.inventory.max_size = 20
+        self.inventory.max_size = 10
         self.money = 100
 
         self.inventory.setAmountOf('Food', 0)

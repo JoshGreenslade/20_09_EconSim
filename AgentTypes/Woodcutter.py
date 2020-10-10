@@ -30,21 +30,24 @@ class Woodcutter(Peasant):
         hasTools = self.queryInventory('Tools') > 0
         hasFood = self.queryInventory('Food') > 0
 
-        if hasFood:
-            if hasTools:
-                self._produce('Wood', Woodcutter.woodOutput, 1)
-                self._consume('Food', 1, 1)
-                self._consume('Tools', 1, 0.1)
+        if Woodcutter.woodOutput > 0:
+            if hasFood:
+                if hasTools:
+                    self._produce('Wood', Woodcutter.woodOutput, 1)
+                    self._consume('Food', 1, 1)
+                    self._consume('Tools', 1, 0.1)
 
-                commodityQuantities = {'Food': 1, 'Tools': 0.1}
-                self.calcCostToProduce(commodityQuantities,
-                                       totalProduced=2)
+                    commodityQuantities = {'Food': 1, 'Tools': 0.1}
+                    self.calcCostToProduce(commodityQuantities,
+                                           totalProduced=Woodcutter.woodOutput)
+                else:
+                    self._produce('Wood', 1, 1)
+                    self._consume('Food', 1, 1)
+
+                    commodityQuantities = {'Food': 1}
+                    self.calcCostToProduce(commodityQuantities,
+                                           totalProduced=1)
             else:
-                self._produce('Wood', 1, 1)
-                self._consume('Food', 1, 1)
-
-                commodityQuantities = {'Food': 1}
-                self.calcCostToProduce(commodityQuantities,
-                                       totalProduced=1)
+                self._consume('Money', 2, 1)
         else:
             self._consume('Money', 2, 1)

@@ -30,18 +30,18 @@ class Miner(Peasant):
 
         if hasFood:
             if hasTools:
-                self._produce('Ore', 4, 1)
+                self._produce('Ore', 2, 1)
                 self._consume('Food', 1, 1)
                 self._consume('Tools', 1, 0.1)
                 commodityQuantities = {'Food': 1, 'Tools': 0.1}
                 self.calcCostToProduce(commodityQuantities,
-                                       totalProduced=4)
+                                       totalProduced=2)
             else:
-                self._produce('Ore', 2, 1)
+                self._produce('Ore', 1, 1)
                 self._consume('Food', 1, 1)
 
                 commodityQuantities = {'Food': 1}
                 self.calcCostToProduce(commodityQuantities,
-                                       totalProduced=2)
+                                       totalProduced=1)
         else:
             self._consume('Money', 2, 1)
